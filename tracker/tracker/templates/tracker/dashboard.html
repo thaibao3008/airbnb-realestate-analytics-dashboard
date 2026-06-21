@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Estate Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 20px; }
+        .dashboard-grid { display: flex; gap: 20px; margin-top: 20px; }
+        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 50%; }
+        h1, h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>TỔNG QUAN THỊ TRƯỜNG CHO THUÊ (AIRBNB)</h1>
+    
+    <div class="dashboard-grid">
+        <div class="chart-container">
+            <h2>Xu hướng Giá Thuê Trung Bình</h2>
+            <canvas id="priceTrendChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Phân bổ Loại Phòng</h2>
+            <canvas id="roomTypeChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Gọi dữ liệu từ Django API thông qua kỹ thuật Fetch Bất đồng bộ (AJAX)
+        fetch('/api/chart-data/')
+            .then(response => response.json())
+            .then(data => {
+                
+                // 1. Dựng biểu đồ Đường (Line Chart) - Time Series
+                const ctxTrend = document.getElementById('priceTrendChart').getContext('2d');
+                new Chart(ctxTrend, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Giá trung bình (USD)',
+                            data: data.prices,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3 // Tạo độ cong mượt mà cho đường đồ thị
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+
+                // 2. Dựng biểu đồ Tròn (Doughnut Chart) - Categorical Distribution
+                const ctxRoom = document.getElementById('roomTypeChart').getContext('2d');
+                new Chart(ctxRoom, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.room_types,
+                        datasets: [{
+                            data: data.room_counts,
+                            backgroundColor: ['#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, cutout: '60%' }
+                });
+            })
+            .catch(error => console.error('Lỗi khi tải dữ liệu API:', error));
+    </script>
+</body>
+</html>

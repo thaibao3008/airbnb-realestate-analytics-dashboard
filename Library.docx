@@ -1,0 +1,74 @@
+pip install pyodbc
+
+import pyodbc
+
+class DatabaseManager:
+    def __init__(self):
+        # Lưu ý: Thay đổi Server_Name thành tên server trong SSMS của bạn
+        self.conn_str = (
+            "Driver={ODBC Driver 17 for SQL Server};"
+            "Server=MICHAEL\MSSQLSERVER01;"
+            "Database=LibraryDB;"
+            "Trusted_Connection=yes;"
+        )
+    
+    def execute_query(self, query, params=None):
+        conn = pyodbc.connect(self.conn_str)
+        cursor = conn.cursor()
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        conn.commit()
+        conn.close()
+
+    def fetch_data(self, query):
+        conn = pyodbc.connect(self.conn_str)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+
+class BookManager:
+    def __init__(self):
+        self.db = DatabaseManager()
+
+    def add_book(self, title, author, year):
+        query = "INSERT INTO Books (Title, Author, PublishedYear) VALUES (?, ?, ?)"
+        self.db.execute_query(query, (title, author, year))
+        print(f"Đã thêm sách: {title}")
+
+    def view_all_books(self):
+        query = "SELECT * FROM Books"
+        books = self.db.fetch_data(query)
+        for book in books:
+            status = "Có sẵn" if book.IsAvailable else "Đã mượn"
+            print(f"ID: {book.BookID} | Sách: {book.Title} | Tác giả: {book.Author} | Trạng thái: {status}")
+
+def main():
+    manager = BookManager()
+    
+    while True:
+        print("\n--- HỆ THỐNG QUẢN LÝ SÁCH ---")
+        print("1. Xem danh sách")
+        print("2. Thêm sách mới")
+        print("3. Thoát")
+        
+        choice = input("Nhập lựa chọn của bạn: ")
+        
+        if choice == '1':
+            manager.view_all_books()
+        elif choice == '2':
+            title = input("Tên sách: ")
+            author = input("Tác giả: ")
+            year = input("Năm xuất bản: ")
+            manager.add_book(title, author, int(year))
+        elif choice == '3':
+            print("Đang thoát chương trình...")
+            break
+        else:
+            print("Lựa chọn không hợp lệ, vui lòng thử lại.")
+
+if __name__ == "__main__":
+    main()

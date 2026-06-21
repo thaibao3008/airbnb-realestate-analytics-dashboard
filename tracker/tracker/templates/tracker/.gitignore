@@ -1,0 +1,23 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Databases & Heavy Data Files
+*.db
+*.sqlite3
+*.csv
+*.gz
+*.zip
+
+# IDEs
+.vscode/
+.idea/
